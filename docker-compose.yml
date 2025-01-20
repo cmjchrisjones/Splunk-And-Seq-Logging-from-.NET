@@ -1,0 +1,42 @@
+version: "3.8"
+
+networks:
+  splunknet:
+    driver: bridge
+    attachable: true
+
+services:
+
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    ports:
+      - "5342:80"
+    networks:
+      - splunknet
+    environment:
+      ACCEPT_EULA: Y
+      SEQ_API_KEY: 1234568790
+  so1:
+    networks:
+      splunknet:
+        aliases: 
+          - so1
+    image: splunk/splunk:latest
+    volumes:
+      - ./so1:/opt/splunk/etc
+    environment:
+      SPLUNK_START_ARGS: --accept-license
+      SPLUNK_PASSWORD: Splunky123!
+      SPLUNK_HEC_TOKEN: 1234567890
+    ports:
+      - "8000:8000"
+      - "8088:8088"
+      - "8089:8089"
+      - "1514:1514"
+      - "9997:9997" 
+  dotnettosplunkandseqloggingapplication:
+    image: ${DOCKER_REGISTRY-}dotnettosplunkandseqloggingapplication
+    build:
+      context: .
+      dockerfile: DotNETToSplunkAndSEQLoggingApplication/Dockerfile
